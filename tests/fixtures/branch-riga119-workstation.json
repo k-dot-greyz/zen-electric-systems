@@ -1,0 +1,39 @@
+{
+  "description": "Reconstructed from VoltWatch v2.0's default manifest: riga119 branch defaults + the 4 active appliances (workstation, homelab, studio monitors, displays). Expected values hand-derived independently from the same physics formulas (VA=W/pf, loop R=rho*2L/csa, etc.), not copied from a prior run of this code — see comments per field.",
+  "branch": {
+    "nominalVoltageVac": 230,
+    "breakerAmps": 16,
+    "breakerCurve": "B",
+    "material": "ALUMINUM",
+    "crossSection": 2.5,
+    "lengthMeters": 18,
+    "appliances": [
+      { "id": "1", "name": "Workstation", "watts": 750, "pf": 0.96, "inrush": 2.2, "leakage": 1.10, "continuous": true, "active": true },
+      { "id": "2", "name": "Homelab Server", "watts": 420, "pf": 0.92, "inrush": 1.4, "leakage": 0.85, "continuous": true, "active": true },
+      { "id": "3", "name": "Studio Monitors + Sub", "watts": 120, "pf": 0.88, "inrush": 2.5, "leakage": 0.45, "continuous": false, "active": true },
+      { "id": "4", "name": "Displays", "watts": 210, "pf": 0.96, "inrush": 1.2, "leakage": 0.30, "continuous": true, "active": true },
+      { "id": "5", "name": "Fridge Compressor (inactive)", "watts": 180, "pf": 0.75, "inrush": 5.2, "leakage": 0.35, "continuous": false, "active": false },
+      { "id": "6", "name": "Washer Heater (inactive)", "watts": 2000, "pf": 1.0, "inrush": 1.0, "leakage": 0.85, "continuous": false, "active": false }
+    ]
+  },
+  "physicsConstants": {
+    "resistivityOhmMm2PerM": { "ALUMINUM": 0.0282, "COPPER": 0.0175 },
+    "continuousLoadDeratePct": 0.8
+  },
+  "expected": {
+    "totalActiveWatts": 1500,
+    "totalApparentVa": 1592.885,
+    "totalRmsAmps": 6.9256,
+    "peakTransientAmps": 12.8752,
+    "totalLeakageMa": 2.70,
+    "continuousWatts": 1380,
+    "continuousLimitAmps": 12.8,
+    "overContinuousLimit": false,
+    "rLoopOhms": 0.40608,
+    "voltageDropV": 2.8123,
+    "voltageDropPct": 1.2228,
+    "heatLossWatts": 19.4772,
+    "breakerUtilizationPct": 43.285
+  },
+  "tolerance": 0.01
+}

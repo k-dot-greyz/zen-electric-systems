@@ -1,0 +1,112 @@
+{
+  "id": "voltage-probe-4point",
+  "version": "1.1.0",
+  "description": "4-point socket diagnostic (L-N, L-PE, N-PE, PE-to-radiator) migrated from VoltWatch v2.0-agnostic evaluateDiagnostics(). v1.1.0 changelog: original had an implicit catch-all that labeled ANY reading not matching the three named hazard conditions as 'VERIFIED CLEAN', including readings like lpe=200V/npe=15V that satisfy neither the floating-earth nor the clean-ground signature. v1.1.0 makes CLEAN an explicit, bounded condition and adds an INDETERMINATE terminal card for readings that match no known signature — see tests/fixtures/gap-case.json for the exact reading pattern that exposed this and tests/fixtures/{true-clean,floating-earth-clean-branch}.json for the fixtures proving the fix doesn't disturb correctly-classified cases.",
+  "parameters": {
+    "hazardRadiatorMinV": 45,
+    "bootlegNpeMaxV": 1,
+    "bootlegLnpeToleranceV": 5,
+    "floatingEarthLpeMaxV": 180,
+    "floatingEarthNpeMinV": 25,
+    "cleanLpeToleranceV": 10,
+    "cleanNpeMaxV": 5,
+    "cleanRadiatorMaxV": 10
+  },
+  "cards": [
+    {
+      "id": "energized-plumbing",
+      "when": { "cmp": { "field": "radiator", "op": "gt", "value": { "param": "hazardRadiatorMinV" } } },
+      "verdict": {
+        "code": "HAZARD_ENERGIZED_PLUMBING",
+        "severity": "critical",
+        "title": "LETHAL RISK: Electrified Plumbing Detected",
+        "description": "Elevated AC voltage between socket earth and radiator/plumbing. A damaged appliance, boiler, or a bootleg ground somewhere in this or a neighboring flat is using the heating pipes as an electrical return path.",
+        "action": "Do not touch radiators and appliances simultaneously. Disconnect any ground clamps tied to pipes. Notify building management immediately.",
+        "standard_refs": ["IEC_60364", "LVS_EN_50110_1"]
+      }
+    },
+    {
+      "id": "bootleg-ground",
+      "when": {
+        "any": [
+          { "cmp": { "field": "bootlegContinuity", "op": "eq", "value": true } },
+          {
+            "all": [
+              { "cmp": { "field": "npe", "op": "lte", "value": { "param": "bootlegNpeMaxV" } } },
+              {
+                "between": {
+                  "field": "lpe",
+                  "min": { "field": "ln", "offset": { "param": "bootlegLnpeToleranceV" }, "negateOffset": true },
+                  "max": { "field": "ln", "offset": { "param": "bootlegLnpeToleranceV" } },
+                  "inclusive": true
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "verdict": {
+        "code": "HAZARD_BOOTLEG_GROUND",
+        "severity": "critical",
+        "title": "CRITICAL: Bootleg Ground (\"Zanulēšana\") Confirmed",
+        "description": "Neutral terminal is jumpered directly to the socket earth clip. If the shared stairwell riser neutral ever burns off, all connected equipment chassis will sit at live mains voltage.",
+        "action": "Kill power, open wall socket, cut out the internal jumper wire. Use a portable PRCD adapter for interim shock protection.",
+        "standard_refs": ["EN_50699", "LVS_EN_50110_1"]
+      }
+    },
+    {
+      "id": "floating-earth",
+      "when": {
+        "all": [
+          { "cmp": { "field": "lpe", "op": "lt", "value": { "param": "floatingEarthLpeMaxV" } } },
+          { "cmp": { "field": "npe", "op": "gt", "value": { "param": "floatingEarthNpeMinV" } } }
+        ]
+      },
+      "verdict": {
+        "code": "WARNING_FLOATING_EARTH",
+        "severity": "warning",
+        "title": "Floating Earth: SMPS Capacitive Voltage Divider",
+        "description": "Earth pin is unconnected to building earth. Measured N-PE voltage is phantom capacitive voltage from connected power-supply Y-capacitors, not a true fault current path.",
+        "action": "Plug all gear into one star-grounded power strip to equalize potential. Use a PRCD for safety and a USB/ground isolator to break audio hum loops.",
+        "standard_refs": ["EN_50699"]
+      }
+    },
+    {
+      "id": "verified-clean",
+      "when": {
+        "all": [
+          {
+            "between": {
+              "field": "lpe",
+              "min": { "field": "ln", "offset": { "param": "cleanLpeToleranceV" }, "negateOffset": true },
+              "max": { "field": "ln", "offset": { "param": "cleanLpeToleranceV" } },
+              "inclusive": true
+            }
+          },
+          { "cmp": { "field": "npe", "op": "lte", "value": { "param": "cleanNpeMaxV" } } },
+          { "cmp": { "field": "radiator", "op": "lte", "value": { "param": "cleanRadiatorMaxV" } } }
+        ]
+      },
+      "verdict": {
+        "code": "VERIFIED_CLEAN_GROUND",
+        "severity": "info",
+        "title": "Verified: Properly Earthed System (TN-S / TN-C-S)",
+        "description": "Receptacle shows stable L-N and L-PE within nominal tolerance, with negligible N-PE offset and no plumbing bond leakage. Chassis leakage currents safely sink into earth.",
+        "action": null,
+        "standard_refs": ["IEC_60364"]
+      }
+    },
+    {
+      "id": "indeterminate-fallback",
+      "when": true,
+      "verdict": {
+        "code": "INDETERMINATE_MANUAL_INSPECTION_REQUIRED",
+        "severity": "warning",
+        "title": "Reading Pattern Does Not Match a Known Signature",
+        "description": "This combination of L-N / L-PE / N-PE / radiator readings doesn't satisfy any known hazard or verified-clean signature in this fault-tree version. This is NOT a pass — it means the automated diagnosis is unable to classify the reading confidently.",
+        "action": "Escalate to manual inspection by a qualified electrician. Do not record this as a verified-safe result.",
+        "standard_refs": []
+      }
+    }
+  ]
+}

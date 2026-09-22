@@ -1,0 +1,5 @@
+{
+  "description": "THE BUG THIS VERSION FIXES: lpe=200V (30V below nominal 230V — a real degraded-earth-continuity signature) with npe=15V (elevated, not the '1-3V negligible' VoltWatch's else-branch claimed, but not >25V either). Under VoltWatch v2.0's original evaluateDiagnostics(), this fell through every named condition into an unconditional else-branch labeled 'VERIFIED: PROPERLY EARTHED SYSTEM'. That is a false-clean on a reading that should trigger manual inspection, not a passing compliance record. v1.1.0's explicit verified-clean bounds + INDETERMINATE catch-all closes this.",
+  "input": { "ln": 230, "lpe": 200, "npe": 15, "radiator": 5, "bootlegContinuity": false },
+  "expectedVerdictCode": "INDETERMINATE_MANUAL_INSPECTION_REQUIRED"
+}

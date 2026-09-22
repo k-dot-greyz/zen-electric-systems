@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://zen-electric-systems/schemas/jurisdiction.schema.json",
+  "title": "Jurisdiction Pack",
+  "description": "Supplies everything region-specific: which standards apply, the physical constants Branch Physics evaluates against, and which fault-tree rule set a manifest referencing this jurisdiction should be evaluated with. See ARCHITECTURE.md Section 5.",
+  "type": "object",
+  "required": ["id", "name", "standards", "physicsConstants", "faultTreeRef"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string" },
+    "name": { "type": "string" },
+    "standards": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "e.g. LVS_EN_50110_1, EN_50699, OSHA_1910_S, IEC_60364 — was a hardcoded literal on every manifest in VoltWatch v2.0; now lives here."
+    },
+    "physicsConstants": {
+      "type": "object",
+      "required": ["resistivityOhmMm2PerM", "continuousLoadDeratePct"],
+      "additionalProperties": false,
+      "properties": {
+        "resistivityOhmMm2PerM": {
+          "type": "object",
+          "description": "Material key -> resistivity in Ohm*mm^2/m. Keys correspond to manifest.branch.material values for this jurisdiction.",
+          "additionalProperties": { "type": "number", "exclusiveMinimum": 0 },
+          "minProperties": 1
+        },
+        "continuousLoadDeratePct": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1,
+          "description": "e.g. 0.8 for the NEC/IEC 80% continuous-load breaker rule"
+        }
+      }
+    },
+    "faultTreeRef": {
+      "type": "string",
+      "description": "id@version of a rules/fault-trees/*.json pack, e.g. 'voltage-probe-4point@1.1.0'"
+    }
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "description": "Regression: VoltWatch warsawPlata archetype preset — energized plumbing case",
+  "input": { "ln": 228, "lpe": 0, "npe": 112, "radiator": 95, "bootlegContinuity": false },
+  "expectedVerdictCode": "HAZARD_ENERGIZED_PLUMBING"
+}

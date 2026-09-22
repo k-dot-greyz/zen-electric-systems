@@ -1,0 +1,5 @@
+{
+  "description": "Regression: VoltWatch vilniusLiet archetype preset — direct bootleg continuity flag",
+  "input": { "ln": 230, "lpe": 230, "npe": 0, "radiator": 2, "bootlegContinuity": true },
+  "expectedVerdictCode": "HAZARD_BOOTLEG_GROUND"
+}

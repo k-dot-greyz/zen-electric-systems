@@ -1,0 +1,5 @@
+{
+  "description": "Regression: VoltWatch riga119 archetype preset — energized plumbing case",
+  "input": { "ln": 230, "lpe": 0, "npe": 115, "radiator": 110, "bootlegContinuity": false },
+  "expectedVerdictCode": "HAZARD_ENERGIZED_PLUMBING"
+}
