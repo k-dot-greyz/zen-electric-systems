@@ -1,0 +1,22 @@
+{
+  "name": "zen-electric-systems",
+  "private": true,
+  "type": "commonjs",
+  "description": "Portable electrical-safety domain core: rules as data, thin JS evaluator. VoltWatch is the first driver.",
+  "engines": {
+    "node": ">=18"
+  },
+  "bin": {
+    "zes": "./bin/zes.js"
+  },
+  "scripts": {
+    "test": "node bin/zes.js test",
+    "test:fault-tree": "node tests/run-fault-tree-tests.js",
+    "test:physics": "node tests/run-branch-physics-tests.js",
+    "test:schemas": "node tests/validate-schemas.js",
+    "diagnose": "node bin/zes.js diagnose"
+  },
+  "devDependencies": {
+    "ajv": "8.20.0"
+  }
+}

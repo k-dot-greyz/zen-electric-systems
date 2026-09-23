@@ -1,10 +1,18 @@
 'use strict';
-// One-off validation: do our own schemas parse, and does real data pass them?
-// Not part of the permanent suite (ajv isn't a committed dependency yet — see note at bottom).
+// Dev-time schema check. ajv is a pinned devDependency (draft 2020-12 via ajv/dist/2020).
+// Not a runtime dependency of engine/js — see package.json.
 
-const Ajv2020 = require('ajv/dist/2020'); // schemas declare draft 2020-12; ajv's default export only supports draft-07
 const fs = require('fs');
 const path = require('path');
+
+let Ajv2020;
+try {
+  Ajv2020 = require('ajv/dist/2020'); // schemas declare draft 2020-12; ajv's default export only supports draft-07
+} catch (err) {
+  console.error('ajv is missing. Run `npm install` (ajv is a pinned devDependency, not --no-save).');
+  console.error(err.message);
+  process.exit(1);
+}
 
 const ajv = new Ajv2020({ strict: false });
 

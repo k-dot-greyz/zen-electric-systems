@@ -18,6 +18,7 @@ What exists and is proven by fixture tests:
 - `rules/fault-trees/voltage-probe-4point.json` v1.1.0 — migrated diagnostic logic, **with a real bug fixed**: v2.0's original catch-all silently labeled any unmatched reading as "verified clean," including readings that were neither a known hazard nor actually clean (see `tests/fixtures/gap-case.json`). v1.1.0 adds an explicit `VERIFIED_CLEAN_GROUND` condition and an `INDETERMINATE_MANUAL_INSPECTION_REQUIRED` terminal card instead.
 - `engine/js/` — pure-function evaluator + branch physics calculator, no eval, no DOM, no dependencies
 - `tests/` — 8 fault-tree fixtures (5 regression from VoltWatch's original archetypes, 3 new proving the gap fix) + 1 branch-physics fixture, hand-derived and cross-checked
+- `bin/zes.js` — CLI leaf (`zes test` / `zes diagnose` / `zes validate`). File I/O stays here so `engine/js` stays dependency-free.
 
 What's stubbed, deliberately:
 - `engine/py/`, `engine/rs/` — no code until a real caller needs them
@@ -27,26 +28,33 @@ What's still open (your call, not mine):
 - Whether `fault-tree.schema.json` should be a specialization of your existing JSON-card everything-engine format, or stand alone. Written standalone for now — see `docs/ARCHITECTURE.md` Section 7.
 - Whether jurisdiction packs should be allowed to override fault-tree conditions, only append, or both.
 
-## Running the tests
+## Setup
 
-No install required for the core suites (pure Node, no dependencies):
+Needs Node 18+ (`.nvmrc` pins **20**; `package.json` `engines` allows `>=18`).
 
 ```
+npm install
+```
+
+That installs the pinned `ajv@8.20.0` devDependency used only by schema validation. `engine/js` has zero runtime deps — `ajv` is validate-only.
+
+## Everyday commands
+
+```
+npm test              # fault-tree + branch-physics + schema validate
+npm run diagnose -- --fixture tests/fixtures/true-clean.json
+npx zes diagnose --readings '{"ln":230,"lpe":230,"npe":0,"radiator":0}'
+
+# Still work if you hate npm scripts:
 node tests/run-fault-tree-tests.js
 node tests/run-branch-physics-tests.js
-```
-
-Schema validation against real data requires `ajv` (dev-time only,
-not a runtime dependency of anything in `engine/`):
-
-```
-npm install ajv --no-save
 node tests/validate-schemas.js
 ```
 
-## Init ritual checklist (per doctrine — pick up here)
+`npx zes help` prints the same surface (`test`, `validate`, `diagnose`). Diagnose defaults `bootlegContinuity` to `false` when omitted from `--readings`.
 
-- [ ] `git init`, first commit
+## Still open (pick up here)
+
 - [ ] Decide the fault-tree-schema-specialization question (Section 7.4)
 - [ ] Decide jurisdiction override semantics (Section 7.3)
 - [ ] Patch `implementations/voltwatch-html/` per its README
