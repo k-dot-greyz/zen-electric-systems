@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://zen-electric-systems/schemas/manifest.schema.json",
+  "title": "Electrical Audit Manifest",
+  "description": "Portable-core manifest. schemaVersion is checked for EQUALITY by loaders, not truthiness — see ARCHITECTURE.md Section 6. jurisdictionId replaces the old hardcoded `standards` array; standards are resolved from the referenced jurisdiction pack at evaluation time.",
+  "type": "object",
+  "required": ["schemaVersion", "jurisdictionId", "protocolId", "generatedAt", "meta", "branch", "diagnostics", "patRegister", "remediationOrders"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "enum": ["3.0.0-portable"],
+      "description": "Must match a version the loader explicitly supports. No truthy-check acceptance."
+    },
+    "jurisdictionId": {
+      "type": "string",
+      "description": "References a rules/jurisdictions/*.json pack id. Supplies standards refs + physics constants + fault-tree binding."
+    },
+    "standardsOverride": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Optional site-specific standards ADDED on top of the jurisdiction pack's list. Does not replace it."
+    },
+    "protocolId": { "type": "string" },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "meta": {
+      "type": "object",
+      "description": "Free-form site/inspector metadata. Intentionally loose — this is descriptive, not evaluated by any engine logic.",
+      "additionalProperties": true
+    },
+    "branch": {
+      "type": "object",
+      "required": ["nominalVoltageVac", "breakerAmps", "breakerCurve", "material", "crossSection", "lengthMeters", "appliances"],
+      "additionalProperties": false,
+      "properties": {
+        "nominalVoltageVac": { "type": "number", "exclusiveMinimum": 0 },
+        "breakerAmps": { "type": "number", "exclusiveMinimum": 0 },
+        "breakerCurve": { "type": "string" },
+        "material": {
+          "type": "string",
+          "description": "Key into the jurisdiction pack's resistivityOhmMm2PerM map. Not an engine-level enum — a jurisdiction pack can define materials beyond ALUMINUM/COPPER if it needs to."
+        },
+        "crossSection": { "type": "number", "exclusiveMinimum": 0, "description": "mm^2" },
+        "lengthMeters": { "type": "number", "exclusiveMinimum": 0 },
+        "appliances": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "name", "watts", "pf", "active"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "type": "string" },
+              "name": { "type": "string" },
+              "watts": { "type": "number", "minimum": 0 },
+              "pf": { "type": "number", "minimum": 0, "maximum": 1, "description": "Power factor" },
+              "inrush": { "type": "number", "minimum": 1, "default": 1.0 },
+              "leakage": { "type": "number", "minimum": 0, "default": 0.2, "description": "mA" },
+              "continuous": { "type": "boolean", "default": false },
+              "active": { "type": "boolean" }
+            }
+          }
+        }
+      }
+    },
+    "diagnostics": {
+      "type": "object",
+      "required": ["ln", "lpe", "npe", "radiator", "bootlegContinuity"],
+      "additionalProperties": false,
+      "properties": {
+        "ln": { "type": "number", "description": "Line-Neutral probe reading, V AC" },
+        "lpe": { "type": "number", "description": "Line-PE probe reading, V AC" },
+        "npe": { "type": "number", "description": "Neutral-PE probe reading, V AC" },
+        "radiator": { "type": "number", "description": "PE-to-radiator/plumbing probe reading, V AC" },
+        "bootlegContinuity": { "type": "boolean", "description": "Direct continuity test result: neutral jumpered to earth clip" }
+      }
+    },
+    "patRegister": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "desc", "appClass", "visual", "riso", "leakage", "status"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string" },
+          "desc": { "type": "string" },
+          "appClass": { "type": "string", "enum": ["CLASS_I", "CLASS_II"] },
+          "visual": { "type": "boolean" },
+          "rpe": { "type": ["number", "null"], "description": "Ohms; null for Class II (no earth pin)" },
+          "riso": { "type": "number", "description": "MOhms" },
+          "leakage": { "type": "number", "description": "mA" },
+          "status": { "type": "string", "enum": ["PASS", "FAIL"] }
+        }
+      }
+    },
+    "remediationOrders": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "text", "mandatory", "done"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string" },
+          "text": { "type": "string" },
+          "mandatory": { "type": "boolean" },
+          "done": { "type": "boolean" }
+        }
+      }
+    },
+    "complianceArtifact": {
+      "type": "object",
+      "description": "See ARCHITECTURE.md Section 4 — integrity requirement. Optional at manifest level; required before an export/print is considered a valid signed record.",
+      "additionalProperties": false,
+      "properties": {
+        "integrityAlgorithm": {
+          "type": "string",
+          "enum": ["SHA-256", "MOCK"],
+          "description": "MOCK is only legal if integrityStatus below is also set and rendered visibly on every output surface."
+        },
+        "integrityDigest": { "type": "string" },
+        "integrityStatus": {
+          "type": "string",
+          "enum": ["VERIFIED", "MOCK — not cryptographically valid"]
+        },
+        "signedAt": { "type": "string", "format": "date-time" },
+        "signatureImageRef": { "type": "string", "description": "Reference to a stored signature asset, not the raw canvas data." }
+      }
+    }
+  }
+}

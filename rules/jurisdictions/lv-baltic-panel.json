@@ -1,0 +1,13 @@
+{
+  "id": "lv-baltic-panel",
+  "name": "Baltic / post-Soviet panel-block residential (LV/LT/PL/CZ TN-C legacy riser context)",
+  "standards": ["LVS_EN_50110_1", "EN_50699", "OSHA_1910_S", "IEC_60364"],
+  "physicsConstants": {
+    "resistivityOhmMm2PerM": {
+      "ALUMINUM": 0.0282,
+      "COPPER": 0.0175
+    },
+    "continuousLoadDeratePct": 0.8
+  },
+  "faultTreeRef": "voltage-probe-4point@1.1.0"
+}

@@ -1,0 +1,5 @@
+{
+  "description": "New: a genuinely clean, properly earthed reading. None of VoltWatch's 5 built-in demo archetypes actually exercised this path — all 5 are hazard scenarios.",
+  "input": { "ln": 230, "lpe": 228, "npe": 2, "radiator": 1, "bootlegContinuity": false },
+  "expectedVerdictCode": "VERIFIED_CLEAN_GROUND"
+}

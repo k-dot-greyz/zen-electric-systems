@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://zen-electric-systems/schemas/fault-tree.schema.json",
+  "title": "Fault Tree Rule Set",
+  "description": "First-match-wins ordered list of diagnostic cards. Conditions are a STRUCTURED PREDICATE DSL, deliberately not arbitrary JS/eval — a fault-tree pack is data that could come from an untrusted or third-party jurisdiction source, and the evaluator must never execute code, only interpret this grammar. Open question from ARCHITECTURE.md Section 7.4 (specialization of the JSON-card everything-engine format vs sibling grammar) is UNRESOLVED — this schema is written standalone pending that call; treat it as a candidate specialization target.",
+  "type": "object",
+  "required": ["id", "version", "parameters", "cards"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string" },
+    "version": { "type": "string" },
+    "description": { "type": "string" },
+    "parameters": {
+      "type": "object",
+      "description": "Named thresholds referenced from card conditions via {\"param\": \"name\"}. Keeps numeric thresholds as data, not literals buried in cards, per no-hardcoded-values doctrine.",
+      "additionalProperties": { "type": ["number", "boolean", "string"] }
+    },
+    "cards": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/card" }
+    }
+  },
+  "$defs": {
+    "value": {
+      "description": "A literal, a named-parameter reference, or a value relative to another reading field (e.g. 'ln - tolerance') for site-relative thresholds like earth-tolerance-around-measured-line-voltage.",
+      "oneOf": [
+        { "type": ["number", "boolean", "string"] },
+        {
+          "type": "object",
+          "required": ["param"],
+          "additionalProperties": false,
+          "properties": { "param": { "type": "string" } }
+        },
+        {
+          "type": "object",
+          "required": ["field"],
+          "additionalProperties": false,
+          "description": "Resolves to readings[field] (+/- an offset), for thresholds defined relative to another measured value rather than an absolute constant.",
+          "properties": {
+            "field": { "type": "string" },
+            "offset": {
+              "description": "Added to the field's value. Defaults to 0.",
+              "oneOf": [
+                { "type": "number" },
+                { "type": "object", "required": ["param"], "additionalProperties": false, "properties": { "param": { "type": "string" } } }
+              ]
+            },
+            "negateOffset": { "type": "boolean", "default": false, "description": "If true, subtracts the resolved offset instead of adding it." }
+          }
+        }
+      ]
+    },
+    "condition": {
+      "description": "Recursive boolean predicate over a flat readings object. `true` (bare boolean literal) always matches — used for the terminal catch-all card.",
+      "oneOf": [
+        { "const": true },
+        {
+          "type": "object",
+          "required": ["all"],
+          "additionalProperties": false,
+          "properties": { "all": { "type": "array", "items": { "$ref": "#/$defs/condition" }, "minItems": 1 } }
+        },
+        {
+          "type": "object",
+          "required": ["any"],
+          "additionalProperties": false,
+          "properties": { "any": { "type": "array", "items": { "$ref": "#/$defs/condition" }, "minItems": 1 } }
+        },
+        {
+          "type": "object",
+          "required": ["not"],
+          "additionalProperties": false,
+          "properties": { "not": { "$ref": "#/$defs/condition" } }
+        },
+        {
+          "type": "object",
+          "required": ["cmp"],
+          "additionalProperties": false,
+          "properties": {
+            "cmp": {
+              "type": "object",
+              "required": ["field", "op", "value"],
+              "additionalProperties": false,
+              "properties": {
+                "field": { "type": "string", "description": "Key into the readings object, e.g. 'npe'" },
+                "op": { "type": "string", "enum": ["gt", "gte", "lt", "lte", "eq", "ne"] },
+                "value": { "$ref": "#/$defs/value" }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["between"],
+          "additionalProperties": false,
+          "properties": {
+            "between": {
+              "type": "object",
+              "required": ["field", "min", "max"],
+              "additionalProperties": false,
+              "properties": {
+                "field": { "type": "string" },
+                "min": { "$ref": "#/$defs/value" },
+                "max": { "$ref": "#/$defs/value" },
+                "inclusive": { "type": "boolean", "default": true }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "card": {
+      "type": "object",
+      "required": ["id", "when", "verdict"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string" },
+        "when": { "$ref": "#/$defs/condition" },
+        "verdict": {
+          "type": "object",
+          "required": ["code", "severity", "title"],
+          "additionalProperties": false,
+          "properties": {
+            "code": { "type": "string" },
+            "severity": { "type": "string", "enum": ["info", "warning", "critical"] },
+            "title": { "type": "string" },
+            "description": { "type": "string" },
+            "action": { "type": ["string", "null"], "description": "null is a legitimate value — e.g. a verified-clean verdict has no remediation action." },
+            "standard_refs": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      }
+    }
+  }
+}

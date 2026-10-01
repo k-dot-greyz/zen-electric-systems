@@ -1,0 +1,5 @@
+{
+  "description": "New: floating-earth SMPS capacitive divider WITHOUT a bootleg flag or plumbing hazard, isolating the floating-earth card specifically",
+  "input": { "ln": 230, "lpe": 0, "npe": 115, "radiator": 5, "bootlegContinuity": false },
+  "expectedVerdictCode": "WARNING_FLOATING_EARTH"
+}

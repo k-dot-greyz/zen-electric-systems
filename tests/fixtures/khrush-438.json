@@ -1,0 +1,5 @@
+{
+  "description": "Regression: VoltWatch khrush438 archetype preset — energized plumbing case",
+  "input": { "ln": 225, "lpe": 0, "npe": 110, "radiator": 115, "bootlegContinuity": false },
+  "expectedVerdictCode": "HAZARD_ENERGIZED_PLUMBING"
+}
