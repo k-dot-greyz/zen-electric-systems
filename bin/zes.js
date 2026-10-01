@@ -17,7 +17,10 @@ const DEFAULT_RULES = path.join(ROOT, 'rules', 'fault-trees', 'voltage-probe-4po
 
 const SUITES = [
   { name: 'fault-tree', rel: path.join('tests', 'run-fault-tree-tests.js') },
+  { name: 'evaluator-edge', rel: path.join('tests', 'run-evaluator-edge-tests.js') },
   { name: 'branch-physics', rel: path.join('tests', 'run-branch-physics-tests.js') },
+  { name: 'branch-physics-edge', rel: path.join('tests', 'run-branch-physics-edge-tests.js') },
+  { name: 'zes-cli', rel: path.join('tests', 'run-zes-cli-tests.js') },
   { name: 'schemas', rel: path.join('tests', 'validate-schemas.js') },
 ];
 
