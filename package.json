@@ -12,7 +12,10 @@
   "scripts": {
     "test": "node bin/zes.js test",
     "test:fault-tree": "node tests/run-fault-tree-tests.js",
+    "test:evaluator-edge": "node tests/run-evaluator-edge-tests.js",
     "test:physics": "node tests/run-branch-physics-tests.js",
+    "test:physics-edge": "node tests/run-branch-physics-edge-tests.js",
+    "test:cli": "node tests/run-zes-cli-tests.js",
     "test:schemas": "node tests/validate-schemas.js",
     "diagnose": "node bin/zes.js diagnose"
   },
